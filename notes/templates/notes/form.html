@@ -1,0 +1,125 @@
+{% extends "blog/base.html" %}
+{% load static %}
+{% block title %}Notes - 작성{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'vendor/quill/quill.snow.css' %}">
+  <link rel="stylesheet" href="{% static 'css/editor.css' %}">
+
+  <h1 class="h3 mb-3">{% if object %}노트 수정{% else %}노트 작성{% endif %}</h1>
+
+  <form method="post" class="card shadow-sm" id="note-form">
+    <div class="card-body">
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.title.id_for_label }}">제목</label>
+        {{ form.title }}
+        {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">내용</label>
+
+        <div class="editor-shell">
+          <div id="editor-toolbar" class="ql-toolbar ql-snow editor-toolbar">
+            <span class="ql-formats">
+              <select class="ql-header" title="헤더">
+                <option value="1">H1</option>
+                <option value="2">H2</option>
+                <option value="3">H3</option>
+                <option selected>본문</option>
+              </select>
+              <select class="ql-size" title="글씨 크기">
+                <option value="12px">12</option>
+                <option value="14px">14</option>
+                <option value="16px" selected>16</option>
+                <option value="18px">18</option>
+                <option value="24px">24</option>
+                <option value="32px">32</option>
+              </select>
+            </span>
+
+            <span class="ql-formats">
+              <button class="ql-bold" title="굵게"></button>
+              <button class="ql-italic" title="기울임"></button>
+              <button class="ql-underline" title="밑줄"></button>
+              <button class="ql-strike" title="취소선"></button>
+            </span>
+
+            <span class="ql-formats">
+              <select class="ql-color" title="글자색"></select>
+              <select class="ql-background" title="배경색"></select>
+            </span>
+
+            <span class="ql-formats">
+              <button class="ql-list" value="ordered" title="번호 목록"></button>
+              <button class="ql-list" value="bullet" title="점 목록"></button>
+              <button class="ql-indent" value="-1" title="내어쓰기"></button>
+              <button class="ql-indent" value="+1" title="들여쓰기"></button>
+            </span>
+
+            <span class="ql-formats">
+              <select class="ql-align" title="정렬"></select>
+            </span>
+
+            <span class="ql-formats">
+              <button class="ql-blockquote" title="인용"></button>
+              <button class="ql-code-block" title="코드"></button>
+              <button class="ql-link" title="링크"></button>
+              <button class="ql-image" title="이미지(URL)"></button>
+            </span>
+
+            <span class="ql-formats">
+              <button class="ql-clean" title="서식 제거"></button>
+            </span>
+          </div>
+
+          <div id="editor" class="editor-body ql-container ql-snow" data-quill data-quill-toolbar="editor-toolbar" data-quill-textarea="id_content"></div>
+        </div>
+
+        <div class="form-text">서식은 HTML로 저장됩니다.</div>
+
+        <div class="d-none">
+          {{ form.content }}
+        </div>
+        {% if form.content.errors %}<div class="text-danger small mt-1">{{ form.content.errors }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">카테고리 (여러 개 선택 가능)</label>
+
+        {{ form.categories }}
+
+        {% with selected_ids=form.categories.value %}
+          <div class="d-flex flex-wrap gap-2">
+            {% for c in notes_categories %}
+              <input
+                type="checkbox"
+                class="btn-check"
+                name="categories"
+                id="cat-{{ c.id }}"
+                value="{{ c.id }}"
+                autocomplete="off"
+                {% if selected_ids and c.id|stringformat:"s" in selected_ids %}checked{% endif %}
+              >
+              <label class="btn btn-outline-secondary btn-sm" for="cat-{{ c.id }}">{{ c.name }}</label>
+            {% empty %}
+              <div class="text-secondary small">카테고리가 없어요. `/admin/`에서 Category를 먼저 추가해 주세요.</div>
+            {% endfor %}
+          </div>
+        {% endwith %}
+
+        {% if form.categories.errors %}<div class="text-danger small mt-1">{{ form.categories.errors }}</div>{% endif %}
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">저장</button>
+        <a class="btn btn-outline-secondary" href="{% url 'notes' %}">취소</a>
+      </div>
+    </div>
+  </form>
+
+  <script src="{% static 'vendor/quill/quill.min.js' %}" defer></script>
+  <script src="{% static 'js/quill_editor.js' %}" defer></script>
+{% endblock %}

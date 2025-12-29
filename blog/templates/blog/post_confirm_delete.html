@@ -1,0 +1,13 @@
+{% extends "blog/base.html" %}
+{% block title %}삭제{% endblock %}
+
+{% block content %}
+  <h1 class="h4 mb-3">글 삭제</h1>
+  <div class="alert alert-warning">정말로 “{{ object.title }}” 글을 삭제할까요?</div>
+
+  <form method="post" class="d-flex gap-2">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">삭제</button>
+    <a class="btn btn-outline-secondary" href="{% url 'blog_post_detail' object.pk %}">취소</a>
+  </form>
+{% endblock %}

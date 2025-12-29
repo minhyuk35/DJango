@@ -1,0 +1,68 @@
+.editor-shell {
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.editor-toolbar {
+  border-bottom: 1px solid var(--border);
+}
+
+.editor-body {
+  min-height: 420px;
+}
+
+.ql-toolbar.ql-snow {
+  border: 0;
+}
+
+.ql-container.ql-snow {
+  border: 0;
+}
+
+/* Quill dark/light theme harmonization */
+.ql-snow .ql-stroke {
+  stroke: var(--muted);
+}
+
+.ql-snow .ql-fill,
+.ql-snow .ql-stroke.ql-fill {
+  fill: var(--muted);
+}
+
+.ql-snow .ql-picker {
+  color: var(--muted);
+}
+
+.ql-snow .ql-picker-options {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 0.75rem 1.75rem rgba(0, 0, 0, 0.25);
+}
+
+.ql-snow .ql-picker.ql-expanded .ql-picker-label,
+.ql-snow .ql-picker-label:hover,
+.ql-snow .ql-picker-item:hover,
+.ql-snow .ql-active .ql-stroke,
+.ql-snow button:hover .ql-stroke,
+.ql-snow button.ql-active .ql-stroke,
+.ql-snow button:hover .ql-fill,
+.ql-snow button.ql-active .ql-fill {
+  stroke: var(--text);
+  fill: var(--text);
+  color: var(--text);
+}
+
+.ql-editor {
+  color: var(--text);
+}
+
+.ql-editor.ql-blank::before {
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.ql-toolbar .ql-formats {
+  margin-right: 0.35rem;
+}

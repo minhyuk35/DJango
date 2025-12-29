@@ -1,0 +1,67 @@
+{% extends "blog/base.html" %}
+{% block title %}검색{% endblock %}
+
+{% block content %}
+  <div class="section-title">
+    <div>
+      <div class="kicker">Search</div>
+      <h1 class="h4">검색</h1>
+    </div>
+  </div>
+
+  <form class="mb-3" method="get" action="{% url 'search' %}">
+    <div class="input-group">
+      <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="블로그 글 / 노트 제목 검색" />
+      <button class="btn btn-primary" type="submit">검색</button>
+    </div>
+  </form>
+
+  {% if not query %}
+    <div class="text-muted">검색어를 입력해 주세요.</div>
+  {% else %}
+    <div class="text-muted mb-3">“{{ query }}” 결과</div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="section-title">
+          <h2 class="h5 mb-0">블로그 글</h2>
+          <span class="badge text-bg-light border">{{ posts|length }}</span>
+        </div>
+        {% if posts %}
+          <div class="list-group list-group-flush">
+            {% for p in posts %}
+              <a class="list-group-item list-group-item-action" href="{% url 'blog_post_detail' p.pk %}">
+                <div class="fw-semibold text-truncate">{{ p.title }}</div>
+                <div class="text-muted small">{{ p.created_at|date:"Y-m-d H:i" }}</div>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-muted">결과가 없어요.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="section-title">
+          <h2 class="h5 mb-0">노트</h2>
+          <span class="badge text-bg-light border">{{ notes|length }}</span>
+        </div>
+        {% if notes %}
+          <div class="list-group list-group-flush">
+            {% for n in notes %}
+              <a class="list-group-item list-group-item-action" href="{% url 'note_detail' n.pk %}">
+                <div class="fw-semibold text-truncate">{{ n.title }}</div>
+                <div class="text-muted small">{{ n.updated_at|date:"Y-m-d H:i" }}</div>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-muted">결과가 없어요.</div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+

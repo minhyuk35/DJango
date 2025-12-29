@@ -1,0 +1,13 @@
+{% extends "blog/base.html" %}
+{% block title %}Delete - Notes{% endblock %}
+
+{% block content %}
+  <h1 class="h3 mb-3">노트 삭제</h1>
+  <div class="alert alert-warning">정말로 "{{ object.title }}" 노트를 삭제할까요?</div>
+
+  <form method="post" class="d-flex gap-2">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">삭제</button>
+    <a class="btn btn-outline-secondary" href="{% url 'note_detail' object.pk %}">취소</a>
+  </form>
+{% endblock %}

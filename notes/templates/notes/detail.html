@@ -1,0 +1,38 @@
+{% extends "blog/base.html" %}
+{% block title %}{{ note.title }} - 노트{% endblock %}
+
+{% block content %}
+  <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+    <div>
+      <h1 class="h3 mb-1">{{ note.title }}</h1>
+      <div class="text-muted small">수정: {{ note.updated_at|date:"Y-m-d H:i" }}</div>
+      {% if note.categories.all %}
+        <div class="mt-2 d-flex flex-wrap gap-1">
+          {% for c in note.categories.all %}
+            <a class="badge text-bg-light border text-decoration-none" href="{% url 'notes' %}?category={{ c.slug }}">{{ c.name }}</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    {% if request.user.is_staff %}
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'note_edit' note.pk %}">수정</a>
+        <a class="btn btn-outline-danger btn-sm" href="{% url 'note_delete' note.pk %}">삭제</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      {% if note.content %}
+        {{ note.content|safe }}
+      {% else %}
+        <p class="text-muted mb-0">내용이 비어있어요.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'notes' %}">← 목록</a>
+  </div>
+{% endblock %}

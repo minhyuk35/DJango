@@ -1,0 +1,60 @@
+{% extends "blog/base.html" %}
+{% block title %}홈 - 나만의 블로그{% endblock %}
+
+{% block content %}
+  <div class="section-title">
+    <div>
+      <div class="kicker">Latest</div>
+      <h1 class="h4">최근 블로그 글</h1>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'blog_post_list' %}">전체 보기</a>
+  </div>
+
+  {% for post in posts %}
+    <a class="card mb-3 hover-lift text-decoration-none" href="{% url 'blog_post_detail' post.pk %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between gap-3">
+          <h2 class="h5 mb-1 text-body text-truncate">{{ post.title }}</h2>
+          <span class="badge text-bg-light border flex-shrink-0">Blog</span>
+        </div>
+        <p class="text-muted small mb-0">{{ post.created_at|date:"Y-m-d H:i" }}</p>
+      </div>
+    </a>
+  {% empty %}
+    <div class="alert alert-info">아직 블로그 글이 없어요.</div>
+  {% endfor %}
+
+  <hr class="my-4">
+
+  <div class="section-title">
+    <div>
+      <div class="kicker">Quick Notes</div>
+      <h2 class="h4">최근 노트</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'notes' %}">노트 목록</a>
+      {% if request.user.is_staff %}
+        <a class="btn btn-outline-success btn-sm" href="{% url 'note_create' %}">
+          <i class="bi bi-plus-circle"></i> 새 노트
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% for note in notes %}
+    <a class="card mb-3 hover-lift text-decoration-none" href="{% url 'note_detail' note.pk %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between gap-3">
+          <h3 class="h5 mb-1 text-body text-truncate">{{ note.title }}</h3>
+          <span class="badge text-bg-light border flex-shrink-0">Note</span>
+        </div>
+        <p class="text-muted small mb-0">{{ note.updated_at|date:"Y-m-d H:i" }}</p>
+      </div>
+    </a>
+  {% empty %}
+    <div class="alert alert-secondary">
+      아직 노트가 없어요.
+      {% if request.user.is_staff %}<a class="alert-link" href="{% url 'note_create' %}">첫 노트 만들기</a>{% endif %}
+    </div>
+  {% endfor %}
+{% endblock %}
