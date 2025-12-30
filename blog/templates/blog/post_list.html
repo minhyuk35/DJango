@@ -8,14 +8,16 @@
       <h1 class="h4">블로그 글</h1>
     </div>
     <div class="d-flex gap-2 align-items-center">
-      <form method="get" class="d-flex gap-2 align-items-center">
-        {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category.slug }}">{% endif %}
-        <select class="form-select form-select-sm" name="sort" onchange="this.form.submit()">
-          <option value="recent" {% if sort == "recent" %}selected{% endif %}>최신</option>
-          <option value="old" {% if sort == "old" %}selected{% endif %}>오래된</option>
-          <option value="title" {% if sort == "title" %}selected{% endif %}>제목</option>
-        </select>
-      </form>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          {% if sort == "old" %}오래된{% elif sort == "title" %}제목{% else %}최신{% endif %}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item {% if sort == "recent" %}active{% endif %}" href="?{% if selected_category %}category={{ selected_category.slug }}&{% endif %}sort=recent">최신</a></li>
+          <li><a class="dropdown-item {% if sort == "old" %}active{% endif %}" href="?{% if selected_category %}category={{ selected_category.slug }}&{% endif %}sort=old">오래된</a></li>
+          <li><a class="dropdown-item {% if sort == "title" %}active{% endif %}" href="?{% if selected_category %}category={{ selected_category.slug }}&{% endif %}sort=title">제목</a></li>
+        </ul>
+      </div>
       {% if request.user.is_staff %}
         <a class="btn btn-outline-primary btn-sm text-nowrap" href="{% url 'blog_post_create' %}">
           <i class="bi bi-pencil-square"></i> 글쓰기(나만)

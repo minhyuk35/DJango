@@ -1,12 +1,14 @@
 type GardenResponse = {
   days: number;
   daily: { date: string; count: number }[];
+  visits: { date: string; count: number }[];
   categories: { name: string; slug: string; post_count: number; note_count: number }[];
 };
 
 const cssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 type Cell = { x: number; y: number; size: number; date: string; count: number };
+type VisitBar = { x: number; y: number; w: number; h: number; date: string; count: number };
 
 const draw = (canvas: HTMLCanvasElement, data: GardenResponse): Cell[] => {
   const ctx = canvas.getContext("2d");
@@ -151,6 +153,85 @@ const draw = (canvas: HTMLCanvasElement, data: GardenResponse): Cell[] => {
   return cells;
 };
 
+const drawVisits = (canvas: HTMLCanvasElement, data: GardenResponse): VisitBar[] => {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return [];
+
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  canvas.width = Math.floor(width * dpr);
+  canvas.height = Math.floor(height * dpr);
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, width, height);
+
+  const bg = cssVar("--surface");
+  const border = cssVar("--border");
+  const text = cssVar("--text");
+  const muted = cssVar("--muted");
+  const accent = cssVar("--brand-3");
+
+  roundRect(ctx, 0, 0, width, height, 16);
+  ctx.fillStyle = bg || "rgba(255,255,255,0.06)";
+  ctx.fill();
+  ctx.strokeStyle = border || "rgba(255,255,255,0.14)";
+  ctx.stroke();
+
+  const padding = 16;
+  const headerTop = 26;
+  const subTop = 46;
+  const chartTop = 62;
+  const chartBottom = height - 16;
+
+  const visits = (data.visits || []).slice(-60);
+  const total = visits.reduce((acc, v) => acc + (v.count || 0), 0);
+  const today = visits[visits.length - 1]?.count ?? 0;
+  const max = Math.max(1, ...visits.map((v) => v.count || 0));
+
+  ctx.fillStyle = text || "#fff";
+  ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto";
+  ctx.fillText("Visits", padding, headerTop);
+
+  ctx.fillStyle = muted || "rgba(255,255,255,.7)";
+  ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto";
+  ctx.fillText(`Last ${visits.length} days · today ${today} · total ${total}`, padding, subTop);
+
+  const start = visits[0]?.date;
+  const end = visits[visits.length - 1]?.date;
+  if (start && end) {
+    const rangeText = `${start} ~ ${end}`;
+    const w = ctx.measureText(rangeText).width;
+    ctx.fillText(rangeText, Math.max(padding, width - padding - w), subTop);
+  }
+
+  const bars: VisitBar[] = [];
+  if (!visits.length) return bars;
+
+  const chartLeft = padding;
+  const chartRight = width - padding;
+  const n = visits.length;
+  const gap = 3;
+  const barW = Math.max(2, (chartRight - chartLeft - gap * (n - 1)) / n);
+
+  for (let i = 0; i < n; i++) {
+    const v = visits[i]?.count ?? 0;
+    const t = Math.max(0, Math.min(1, v / max));
+    const h = Math.max(2, (chartBottom - chartTop) * t);
+    const x = chartLeft + i * (barW + gap);
+    const y = chartBottom - h;
+
+    ctx.fillStyle = accent || "rgba(6,182,212,0.9)";
+    roundRect(ctx, x, y, barW, h, 4);
+    ctx.fill();
+
+    const date = visits[i]?.date;
+    if (date) bars.push({ x, y, w: barW, h, date, count: v });
+  }
+
+  return bars;
+};
+
 const roundRect = (
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -206,10 +287,12 @@ const mixColor = (a: string, b: string, t: number) => {
 };
 
 (() => {
-  const canvas = document.querySelector<HTMLCanvasElement>("[data-garden]");
-  if (!canvas) return;
+  const gardenCanvas = document.querySelector<HTMLCanvasElement>("[data-garden]");
+  const visitsCanvas = document.querySelector<HTMLCanvasElement>("[data-visits]");
+  if (!gardenCanvas && !visitsCanvas) return;
   let lastData: GardenResponse | null = null;
   let lastCells: Cell[] = [];
+  let lastVisitBars: VisitBar[] = [];
 
   const tip = document.createElement("div");
   tip.className = "garden-tooltip is-hidden";
@@ -218,26 +301,44 @@ const mixColor = (a: string, b: string, t: number) => {
   const hideTip = () => tip.classList.add("is-hidden");
   const showTip = () => tip.classList.remove("is-hidden");
 
+  const placeTip = (e: MouseEvent) => {
+    const offset = 12;
+    const pad = 8;
+    let left = e.clientX + offset;
+    let top = e.clientY + offset;
+    const tw = tip.offsetWidth;
+    const th = tip.offsetHeight;
+    if (left + tw + pad > window.innerWidth) left = e.clientX - tw - offset;
+    if (top + th + pad > window.innerHeight) top = e.clientY - th - offset;
+    tip.style.left = `${Math.max(pad, left)}px`;
+    tip.style.top = `${Math.max(pad, top)}px`;
+  };
+
+  const render = (data: GardenResponse) => {
+    if (gardenCanvas) lastCells = draw(gardenCanvas, data);
+    if (visitsCanvas) lastVisitBars = drawVisits(visitsCanvas, data);
+  };
+
   const load = async () => {
     const resp = await fetch("/api/garden/");
     if (!resp.ok) return;
     const data = (await resp.json()) as GardenResponse;
     lastData = data;
-    lastCells = draw(canvas, data);
+    render(data);
   };
 
   const onResize = () => load();
   window.addEventListener("resize", onResize);
 
   const observer = new MutationObserver(() => {
-    if (lastData) lastCells = draw(canvas, lastData);
+    if (lastData) render(lastData);
   });
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
-  canvas.addEventListener("mouseleave", hideTip);
-  canvas.addEventListener("mousemove", (e) => {
+  gardenCanvas?.addEventListener("mouseleave", hideTip);
+  gardenCanvas?.addEventListener("mousemove", (e) => {
     if (!lastCells.length) return hideTip();
-    const rect = canvas.getBoundingClientRect();
+    const rect = gardenCanvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
@@ -246,18 +347,22 @@ const mixColor = (a: string, b: string, t: number) => {
 
     tip.textContent = `${hit.date} · ${hit.count}개`;
     showTip();
+    placeTip(e);
+  });
 
-    const offset = 12;
-    const pad = 8;
-    let left = e.clientX + offset;
-    let top = e.clientY + offset;
-    document.body.appendChild(tip);
-    const tw = tip.offsetWidth;
-    const th = tip.offsetHeight;
-    if (left + tw + pad > window.innerWidth) left = e.clientX - tw - offset;
-    if (top + th + pad > window.innerHeight) top = e.clientY - th - offset;
-    tip.style.left = `${Math.max(pad, left)}px`;
-    tip.style.top = `${Math.max(pad, top)}px`;
+  visitsCanvas?.addEventListener("mouseleave", hideTip);
+  visitsCanvas?.addEventListener("mousemove", (e) => {
+    if (!lastVisitBars.length) return hideTip();
+    const rect = visitsCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const hit = lastVisitBars.find((b) => mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h);
+    if (!hit) return hideTip();
+
+    tip.textContent = `${hit.date} · ${hit.count} visits`;
+    showTip();
+    placeTip(e);
   });
 
   load();

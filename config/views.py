@@ -14,6 +14,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
 
+from metrics.models import DailyVisit
+
 
 def _highlight(text: str, query: str) -> str:
     if not text:
@@ -128,6 +130,13 @@ def garden_data(request: HttpRequest) -> JsonResponse:
         d = start + timedelta(days=i)
         daily.append({"date": str(d), "count": daily_map.get(str(d), 0)})
 
+    visits_qs = DailyVisit.objects.filter(date__gte=start).values("date", "count")
+    visits_map: dict[str, int] = {str(row["date"]): int(row["count"]) for row in visits_qs}
+    visits = []
+    for i in range(days):
+        d = start + timedelta(days=i)
+        visits.append({"date": str(d), "count": visits_map.get(str(d), 0)})
+
     categories = (
         Category.objects.annotate(
             post_count=Count("posts", distinct=True),
@@ -137,4 +146,4 @@ def garden_data(request: HttpRequest) -> JsonResponse:
         .order_by("name")
     )
 
-    return JsonResponse({"days": days, "daily": daily, "categories": list(categories)})
+    return JsonResponse({"days": days, "daily": daily, "visits": visits, "categories": list(categories)})

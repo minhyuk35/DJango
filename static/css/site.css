@@ -198,6 +198,23 @@ small,
   color: var(--text);
 }
 
+/* Improve native <select> popup colors on Windows/Chrome */
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] .form-control {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] .form-select,
+html[data-theme="light"] .form-control {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] select option,
+html[data-theme="dark"] select optgroup {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
 .form-control:disabled,
 .form-select:disabled {
   opacity: 0.75;
@@ -234,6 +251,40 @@ small,
 .list-group {
   --bs-list-group-action-hover-bg: var(--hover);
   --bs-list-group-action-active-bg: var(--hover-strong);
+}
+
+/* Bootstrap dropdown (sort, etc.) */
+.dropdown-menu {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  backdrop-filter: saturate(160%) blur(10px);
+}
+
+.dropdown-item {
+  color: var(--text);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  background: var(--hover-strong);
+  color: var(--text);
+}
+
+html[data-theme="dark"] .dropdown-item:hover,
+html[data-theme="dark"] .dropdown-item:focus {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="dark"] .dropdown-item.active,
+html[data-theme="dark"] .dropdown-item:active {
+  background: rgba(124, 58, 237, 0.22);
 }
 
 .list-group.shadow-sm {
