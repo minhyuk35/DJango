@@ -7,34 +7,28 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20251230">
 
-  <title>{% block title %}나만의 블로그{% endblock %}</title>
+  <title>{% block title %}Significant Honey{% endblock %}</title>
 </head>
 
 <body class="app">
   <header class="appbar">
-    <div class="container d-flex align-items-center gap-3 py-3">
-      <a class="brand d-flex align-items-center gap-2 text-decoration-none" href="{% url 'post_list' %}">
-        <img src="{% static 'img/logo.svg' %}" alt="logo" width="28" height="28" class="rounded" />
-        <span class="brand-name">SIGN</span>
-        <span class="brand-sub d-none d-sm-inline">Personal KB</span>
+    <div class="container d-flex flex-wrap align-items-center gap-3 py-3">
+      <a class="brand d-flex align-items-center gap-2 text-decoration-none order-1" href="{% url 'post_list' %}">
+        <img src="{% static 'img/logo.png' %}" alt="logo" width="140" height="40" class="rounded brand-logo" />
       </a>
 
-      <form class="appbar-search ms-auto ms-md-0" role="search" method="get" action="{% url 'search' %}">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text"><i class="bi bi-search"></i></span>
-          <input class="form-control" type="search" name="q" placeholder="제목 검색 (블로그/노트)" aria-label="Search">
-        </div>
-      </form>
-
-      <div class="appbar-actions d-flex align-items-center gap-2 ms-auto">
+      <div class="appbar-actions d-flex align-items-center gap-2 ms-auto order-2 order-md-3">
         {% if request.user.is_staff %}
           <a class="btn btn-sm btn-outline-success text-nowrap" href="{% url 'note_create' %}">
             <i class="bi bi-plus-circle"></i> <span class="d-none d-md-inline">노트</span>
           </a>
           <a class="btn btn-sm btn-outline-primary text-nowrap" href="{% url 'blog_post_create' %}">
             <i class="bi bi-pencil-square"></i> <span class="d-none d-md-inline">글쓰기</span>
+          </a>
+          <a class="btn btn-sm btn-outline-secondary text-nowrap" href="{% url 'files_index' %}">
+            <i class="bi bi-paperclip"></i> <span class="d-none d-md-inline">파일</span>
           </a>
         {% endif %}
 
@@ -46,6 +40,13 @@
           <i class="bi bi-shield-lock"></i> <span class="d-none d-md-inline">Admin</span>
         </a>
       </div>
+
+      <form class="appbar-search order-3 order-md-2" role="search" method="get" action="{% url 'search' %}">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="제목+본문 검색 (블로그/노트)" aria-label="Search">
+        </div>
+      </form>
     </div>
   </header>
 
@@ -55,7 +56,7 @@
         <nav class="rail-card">
           <div class="rail-title">Navigation</div>
           <a class="rail-link" href="{% url 'post_list' %}"><i class="bi bi-grid-1x2"></i> 피드</a>
-          <a class="rail-link" href="{% url 'blog_post_list' %}"><i class="bi bi-journal-richtext"></i> 블로그 글</a>
+          <a class="rail-link" href="{% url 'blog_post_list' %}"><i class="bi bi-journal-richtext"></i> 학습일지</a>
           <a class="rail-link" href="{% url 'notes' %}"><i class="bi bi-journal-text"></i> 노트</a>
           <a class="rail-link" href="{% url 'about' %}"><i class="bi bi-person-badge"></i> 소개</a>
           <a class="rail-link" href="{% url 'contact' %}"><i class="bi bi-envelope"></i> 연락처</a>
@@ -63,6 +64,18 @@
 
         <div class="rail-card">
           <div class="rail-title">카테고리</div>
+
+          <div class="text-muted small mb-2">블로그</div>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <a class="chip" href="{% url 'blog_post_list' %}">전체</a>
+            {% for c in notes_categories %}
+              <a class="chip" href="{% url 'blog_post_list' %}?category={{ c.slug }}">{{ c.name }}</a>
+            {% empty %}
+              <div class="text-muted small">카테고리가 없어요. (admin에서 추가)</div>
+            {% endfor %}
+          </div>
+
+          <div class="text-muted small mb-2">노트</div>
           <div class="d-flex flex-wrap gap-2">
             <a class="chip" href="{% url 'notes' %}">전체</a>
             {% for c in notes_categories %}
@@ -82,10 +95,10 @@
         <div class="side-card">
           <div class="side-title">최근</div>
           <div class="list-group list-group-flush">
-            {% for item in recent_items %}
+                {% for item in recent_items %}
               <a class="list-group-item list-group-item-action" href="{{ item.url }}">
                 <div class="d-flex justify-content-between gap-2 align-items-start">
-                  <div class="fw-semibold text-truncate">{{ item.title }}</div>
+                  <div class="fw-semibold title-wrap">{{ item.title }}</div>
                   <span class="badge text-bg-light border flex-shrink-0">{% if item.kind == "post" %}Blog{% else %}Note{% endif %}</span>
                 </div>
                 <div class="text-muted small">{{ item.timestamp|date:"Y-m-d H:i" }}</div>
@@ -95,29 +108,18 @@
             {% endfor %}
           </div>
         </div>
-
-        <div class="side-card">
-          <div class="side-title">메모</div>
-          <div class="text-muted small">
-            {% if request.user.is_staff %}
-              카테고리를 먼저 만들고, 글/노트 작성 시 연결해 보세요.
-            {% else %}
-              작성은 관리자 로그인 후 가능합니다.
-            {% endif %}
-          </div>
-        </div>
       </aside>
     </div>
   </main>
 
   <footer class="footer">
     <div class="container d-flex flex-column flex-sm-row justify-content-between gap-2 py-4">
-      <div class="text-muted small">© {% now "Y" %} 나만의 블로그</div>
+      <div class="text-muted small">© {% now "Y" %} Personal Log</div>
       <div class="text-muted small">Made with Django + Bootstrap</div>
     </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{% static 'js/app.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}?v=20251230" defer></script>
 </body>
 </html>

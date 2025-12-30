@@ -1,0 +1,44 @@
+{% extends "blog/base.html" %}
+{% load static %}
+{% block title %}파일 관리{% endblock %}
+
+{% block content %}
+  <div class="section-title">
+    <div>
+      <div class="kicker">Files</div>
+      <h1 class="h4">업로드 파일</h1>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <p class="text-muted small mb-3">에디터 이미지 업로드로 저장된 파일 목록입니다.</p>
+
+      {% if uploads %}
+        <div class="list-group list-group-flush">
+          {% for u in uploads %}
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between gap-2 align-items-start">
+                <div class="min-w-0">
+                  <div class="fw-semibold text-truncate">{{ u.original_name|default:u.file.name }}</div>
+                  <div class="text-muted small text-truncate">{{ u.file.url }}</div>
+                  <div class="text-muted small">{{ u.created_at|date:"Y-m-d H:i" }} · {{ u.size }} bytes</div>
+                </div>
+                <div class="d-flex gap-2 flex-shrink-0">
+                  <a class="btn btn-outline-secondary btn-sm" href="{{ u.file.url }}" target="_blank" rel="noreferrer">열기</a>
+                  <form method="post" action="{% url 'files_delete' u.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm" type="submit">삭제</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-muted">업로드된 파일이 없어요.</div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+

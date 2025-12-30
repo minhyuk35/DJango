@@ -1,12 +1,21 @@
 from django import forms
 
+from notes.models import Category
+
 from .models import Post
 
 
 class PostForm(forms.ModelForm):
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.order_by("name"),
+        required=False,
+        widget=forms.MultipleHiddenInput(),
+        label="카테고리",
+    )
+
     class Meta:
         model = Post
-        fields = ["title", "content"]
+        fields = ["title", "content", "categories"]
         widgets = {
             "title": forms.TextInput(
                 attrs={

@@ -11,7 +11,7 @@
 
   <form class="mb-3" method="get" action="{% url 'search' %}">
     <div class="input-group">
-      <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="블로그 글 / 노트 제목 검색" />
+      <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="제목+본문 검색 (블로그/노트)" />
       <button class="btn btn-primary" type="submit">검색</button>
     </div>
   </form>
@@ -25,14 +25,15 @@
       <div class="card-body">
         <div class="section-title">
           <h2 class="h5 mb-0">블로그 글</h2>
-          <span class="badge text-bg-light border">{{ posts|length }}</span>
+          <span class="badge text-bg-light border">{{ post_results|length }}</span>
         </div>
-        {% if posts %}
+        {% if post_results %}
           <div class="list-group list-group-flush">
-            {% for p in posts %}
+            {% for p in post_results %}
               <a class="list-group-item list-group-item-action" href="{% url 'blog_post_detail' p.pk %}">
-                <div class="fw-semibold text-truncate">{{ p.title }}</div>
-                <div class="text-muted small">{{ p.created_at|date:"Y-m-d H:i" }}</div>
+                <div class="fw-semibold title-wrap">{{ p.title_html|safe }}</div>
+                {% if p.snippet_html %}<div class="text-muted small text-truncate-2">{{ p.snippet_html|safe }}</div>{% endif %}
+                <div class="text-muted small">{{ p.date|date:"Y-m-d H:i" }}</div>
               </a>
             {% endfor %}
           </div>
@@ -46,14 +47,15 @@
       <div class="card-body">
         <div class="section-title">
           <h2 class="h5 mb-0">노트</h2>
-          <span class="badge text-bg-light border">{{ notes|length }}</span>
+          <span class="badge text-bg-light border">{{ note_results|length }}</span>
         </div>
-        {% if notes %}
+        {% if note_results %}
           <div class="list-group list-group-flush">
-            {% for n in notes %}
+            {% for n in note_results %}
               <a class="list-group-item list-group-item-action" href="{% url 'note_detail' n.pk %}">
-                <div class="fw-semibold text-truncate">{{ n.title }}</div>
-                <div class="text-muted small">{{ n.updated_at|date:"Y-m-d H:i" }}</div>
+                <div class="fw-semibold title-wrap">{{ n.title_html|safe }}</div>
+                {% if n.snippet_html %}<div class="text-muted small text-truncate-2">{{ n.snippet_html|safe }}</div>{% endif %}
+                <div class="text-muted small">{{ n.date|date:"Y-m-d H:i" }}</div>
               </a>
             {% endfor %}
           </div>
@@ -64,4 +66,3 @@
     </div>
   {% endif %}
 {% endblock %}
-

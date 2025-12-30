@@ -84,6 +84,33 @@
         {% if form.content.errors %}<div class="text-danger small mt-1">{{ form.content.errors }}</div>{% endif %}
       </div>
 
+      <div class="mb-3">
+        <label class="form-label">카테고리 (여러 개 선택 가능)</label>
+
+        {{ form.categories }}
+
+        {% with selected_ids=form.categories.value %}
+          <div class="d-flex flex-wrap gap-2">
+            {% for c in notes_categories %}
+              <input
+                type="checkbox"
+                class="btn-check"
+                name="categories"
+                id="post-cat-{{ c.id }}"
+                value="{{ c.id }}"
+                autocomplete="off"
+                {% if selected_ids and c.id|stringformat:"s" in selected_ids %}checked{% endif %}
+              >
+              <label class="btn btn-outline-secondary btn-sm" for="post-cat-{{ c.id }}">{{ c.name }}</label>
+            {% empty %}
+              <div class="text-muted small">카테고리가 없어요. `/admin/`에서 Category를 먼저 추가해 주세요.</div>
+            {% endfor %}
+          </div>
+        {% endwith %}
+
+        {% if form.categories.errors %}<div class="text-danger small mt-1">{{ form.categories.errors }}</div>{% endif %}
+      </div>
+
       <div class="d-flex gap-2">
         <button class="btn btn-primary" type="submit">저장</button>
         <a class="btn btn-outline-secondary" href="{% url 'blog_post_list' %}">취소</a>

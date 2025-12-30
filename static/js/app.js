@@ -9,13 +9,34 @@
     });
     const html = document.documentElement;
     const button = document.getElementById("theme-toggle");
+    const safeGet = (key) => {
+        try {
+            return window.localStorage.getItem(key);
+        }
+        catch {
+            return null;
+        }
+    };
+    const safeSet = (key, value) => {
+        try {
+            window.localStorage.setItem(key, value);
+        }
+        catch {
+            // ignore (private mode / blocked storage)
+        }
+    };
     const getStored = () => {
-        const t = window.localStorage.getItem("theme");
+        const t = safeGet("theme");
         return t === "light" || t === "dark" ? t : null;
+    };
+    const getDefaultTheme = () => {
+        var _a;
+        const prefersLight = (_a = window.matchMedia) === null || _a === void 0 ? void 0 : _a.call(window, "(prefers-color-scheme: light)").matches;
+        return prefersLight ? "light" : "dark";
     };
     const setTheme = (theme) => {
         html.dataset.theme = theme;
-        window.localStorage.setItem("theme", theme);
+        safeSet("theme", theme);
         if (button) {
             const icon = button.querySelector("i");
             if (icon)
@@ -23,7 +44,7 @@
             button.title = theme === "dark" ? "라이트 테마" : "다크 테마";
         }
     };
-    setTheme(getStored() ?? "dark");
+    setTheme(getStored() ?? getDefaultTheme());
     button === null || button === void 0 ? void 0 : button.addEventListener("click", () => {
         const current = html.dataset.theme || "dark";
         setTheme(current === "dark" ? "light" : "dark");

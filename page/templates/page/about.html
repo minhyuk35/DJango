@@ -3,9 +3,90 @@
 
 {% block content %}
   <h1 class="h4 mb-3">소개</h1>
-  <div class="card shadow-sm">
+
+  <div class="card shadow-sm mb-4">
     <div class="card-body">
-      <p class="mb-0">공부 기록과 프로젝트 메모를 정리하는 개인 블로그입니다.</p>
+      <div class="row g-3 align-items-center">
+        <div class="col-12 col-sm-auto">
+          {% if profile.photo %}
+            <img
+              src="{{ profile.photo.url }}"
+              alt="프로필 사진"
+              class="rounded-circle border"
+              style="width: 96px; height: 96px; object-fit: cover;"
+            />
+          {% else %}
+            <div
+              class="rounded-circle border d-flex align-items-center justify-content-center text-muted"
+              style="width: 96px; height: 96px;"
+            >
+              <i class="bi bi-person" style="font-size: 2rem;"></i>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="col">
+          <div class="d-flex flex-wrap align-items-end justify-content-between gap-2">
+            <div>
+              <div class="h5 mb-1">{{ profile.name|default:"이름을 설정해주세요" }}</div>
+              <div class="text-muted small">
+                {% if profile.university %}{{ profile.university }}{% endif %}
+                {% if profile.university and profile.major %} · {% endif %}
+                {% if profile.major %}{{ profile.major }}{% endif %}
+              </div>
+            </div>
+            {% if request.user.is_staff %}
+              <a class="btn btn-sm btn-outline-secondary" href="/admin/page/aboutprofile/1/change/">
+                <i class="bi bi-gear"></i> 소개 수정
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+    <h2 class="h5 mb-0">포트폴리오</h2>
+    {% if request.user.is_staff %}
+      <a class="btn btn-sm btn-outline-secondary" href="/admin/page/portfolioitem/">
+        <i class="bi bi-plus-circle"></i> 포트폴리오 관리
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="row g-3">
+    {% for item in portfolio_items %}
+      <div class="col-12 col-sm-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          {% if item.image %}
+            <a href="{% url 'portfolio_detail' item.pk %}" class="text-decoration-none">
+              <img
+                src="{{ item.image.url }}"
+                alt="{{ item.title }}"
+                class="card-img-top"
+                style="aspect-ratio: 16 / 9; object-fit: cover;"
+              />
+            </a>
+          {% endif %}
+          <div class="card-body d-flex flex-column gap-2">
+            <div class="fw-semibold">{{ item.title }}</div>
+            {% if item.description %}
+              <div class="text-muted small">{{ item.description_one_line|truncatechars:80 }}</div>
+            {% endif %}
+            <a href="{% url 'portfolio_detail' item.pk %}" class="small text-decoration-none">
+              <i class="bi bi-chevron-right"></i> 상세보기
+            </a>
+            {% if request.user.is_staff and not item.is_published %}
+              <div class="badge text-bg-secondary align-self-start">비공개</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="text-muted">아직 등록된 포트폴리오가 없어요.</div>
+      </div>
+    {% endfor %}
   </div>
 {% endblock %}

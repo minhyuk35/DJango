@@ -1,60 +1,76 @@
 {% extends "blog/base.html" %}
-{% block title %}홈 - 나만의 블로그{% endblock %}
+{% load static %}
+{% block title %}피드{% endblock %}
 
 {% block content %}
-  <div class="section-title">
-    <div>
-      <div class="kicker">Latest</div>
-      <h1 class="h4">최근 블로그 글</h1>
-    </div>
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'blog_post_list' %}">전체 보기</a>
-  </div>
-
-  {% for post in posts %}
-    <a class="card mb-3 hover-lift text-decoration-none" href="{% url 'blog_post_detail' post.pk %}">
-      <div class="card-body">
-        <div class="d-flex justify-content-between gap-3">
-          <h2 class="h5 mb-1 text-body text-truncate">{{ post.title }}</h2>
-          <span class="badge text-bg-light border flex-shrink-0">Blog</span>
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:rgba(124,58,237,.18);border:1px solid var(--border);">
+          <i class="bi bi-person-fill"></i>
         </div>
-        <p class="text-muted small mb-0">{{ post.created_at|date:"Y-m-d H:i" }}</p>
+        <div class="min-w-0">
+          <div class="fw-bold">작성자 · 김민혁</div>
+          <div class="text-muted small">컴퓨터정보과 / 코딩 공부 기록</div>
+        </div>
       </div>
-    </a>
-  {% empty %}
-    <div class="alert alert-info">아직 블로그 글이 없어요.</div>
-  {% endfor %}
-
-  <hr class="my-4">
-
-  <div class="section-title">
-    <div>
-      <div class="kicker">Quick Notes</div>
-      <h2 class="h4">최근 노트</h2>
-    </div>
-    <div class="d-flex gap-2">
-      <a class="btn btn-outline-secondary btn-sm" href="{% url 'notes' %}">노트 목록</a>
-      {% if request.user.is_staff %}
-        <a class="btn btn-outline-success btn-sm" href="{% url 'note_create' %}">
-          <i class="bi bi-plus-circle"></i> 새 노트
-        </a>
-      {% endif %}
     </div>
   </div>
 
-  {% for note in notes %}
-    <a class="card mb-3 hover-lift text-decoration-none" href="{% url 'note_detail' note.pk %}">
-      <div class="card-body">
-        <div class="d-flex justify-content-between gap-3">
-          <h3 class="h5 mb-1 text-body text-truncate">{{ note.title }}</h3>
-          <span class="badge text-bg-light border flex-shrink-0">Note</span>
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="section-title">
+        <div>
+          <div class="kicker">Garden</div>
+          <h2 class="h5">디지털 정원</h2>
         </div>
-        <p class="text-muted small mb-0">{{ note.updated_at|date:"Y-m-d H:i" }}</p>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'blog_post_list' %}">블로그</a>
       </div>
-    </a>
-  {% empty %}
-    <div class="alert alert-secondary">
-      아직 노트가 없어요.
-      {% if request.user.is_staff %}<a class="alert-link" href="{% url 'note_create' %}">첫 노트 만들기</a>{% endif %}
+      <div style="height: 260px;">
+        <canvas data-garden style="width:100%;height:100%;display:block;"></canvas>
+      </div>
+      <div class="text-muted small mt-2">작성량이 쌓이면 정원도 함께 자랍니다.</div>
     </div>
-  {% endfor %}
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="section-title">
+        <div>
+          <div class="kicker">Timeline</div>
+          <h2 class="h5">최근 활동 타임라인</h2>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'search' %}">검색</a>
+      </div>
+
+      <div class="list-group list-group-flush">
+        {% for item in recent_items %}
+          <a class="list-group-item list-group-item-action" href="{{ item.url }}">
+            <div class="d-flex justify-content-between gap-2 align-items-start">
+              <div class="fw-semibold title-wrap">{{ item.title }}</div>
+              <span class="badge text-bg-light border flex-shrink-0">{% if item.kind == "post" %}Blog{% else %}Note{% endif %}</span>
+            </div>
+            <div class="text-muted small">{{ item.timestamp|date:"Y-m-d H:i" }}</div>
+          </a>
+        {% empty %}
+          <div class="text-muted small px-3 py-2">아직 기록이 없어요.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="section-title">
+        <div>
+          <div class="kicker">Quizzes</div>
+          <h2 class="h5">짧은 퀴즈</h2>
+        </div>
+        <span class="text-muted small">작성 시 자동 생성</span>
+      </div>
+      <div class="text-muted small">블로그 글/노트를 읽고 바로 확인할 수 있는 3~5문항 퀴즈가 붙습니다.</div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/garden.js' %}?v=20251230" defer></script>
 {% endblock %}
