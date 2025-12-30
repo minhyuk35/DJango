@@ -151,5 +151,10 @@ elif os.environ.get("RENDER") or os.environ.get("RENDER_SERVICE_ID") or os.envir
 else:
     MEDIA_ROOT = BASE_DIR / "media"
 
+try:
+    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
